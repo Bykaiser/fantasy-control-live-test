@@ -48,7 +48,7 @@ export default {
       target.searchParams.set('x-lang', 'es');
       const upstream = await fetch(target, {
         method: 'GET',
-        headers: { Authorization: authorization, Accept: 'application/json', 'x-lang': 'es' },
+        headers: { Authorization: authorization, Accept: 'application/json', 'x-lang': 'es', 'x-app': '2' },
         redirect: 'manual',
         cache: 'no-store',
       });

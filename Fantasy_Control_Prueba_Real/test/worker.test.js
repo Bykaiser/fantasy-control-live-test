@@ -1,10 +1,16 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import worker, { upstreamPath } from '../src/worker.js';
-import { collection, standings, teamId, players, playerName } from '../public/view-model.js';
+import {accessTokenFromConfig} from '../public/session-token.js';
+import { collection, standings, teamId, teamName, teamPoints, teamValue, isMyTeam, players, playerName, playerPosition, playerClause, marketPrice } from '../public/view-model.js';
 
 const base = 'https://fantasy-control-live-test.example.workers.dev';
 const token = 'Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0In0.signature-value';
+test('session import extracts only the access token and rejects refresh-only files', () => {
+  assert.equal(accessTokenFromConfig(JSON.stringify({access_token:token.slice(7),refresh_token:'unused'})), token.slice(7));
+  assert.throws(() => accessTokenFromConfig('{"refresh_token":"unused"}'));
+  assert.throws(() => accessTokenFromConfig('{"access_token":"short"}'));
+});
 
 test('only specific read routes are forwarded', () => {
   assert.equal(upstreamPath('/api/leagues'), '/v1/competition/1/leagues');
@@ -21,6 +27,7 @@ test('proxy forwards one bearer request without exposing it in response', async 
     globalThis.fetch = async (url, opts) => {
       assert.equal(String(url), 'https://fantasy-api.llt-services.com/api/v1/competition/1/leagues?x-lang=es');
       assert.equal(opts.headers.Authorization, token);
+      assert.equal(opts.headers['x-app'], '2');
       assert.equal(opts.redirect, 'manual');
       return new Response(JSON.stringify({leagues:[{id:42,name:'Liga'}]}), {headers:{'Content-Type':'application/json'}});
     };
@@ -49,4 +56,17 @@ test('maps a league, ranking and nested player entries', () => {
   const ranking = standings({elements:[{team:{id:17,name:'ByKaiser00'},points:258}]});
   assert.equal(teamId(ranking[0]), '17');
   assert.equal(playerName(players({team:{players:[{player:{name:'Navarro'}}]}})[0]), 'Navarro');
+});
+
+test('maps the fields used by the working phone script', () => {
+  const ranking = {team:{id:17,manager:{id:8,managerName:'ByKaiser00'},teamPoints:258,teamValue:215280000}};
+  assert.equal(teamName(ranking), 'ByKaiser00');
+  assert.equal(teamPoints(ranking), 258);
+  assert.equal(teamValue(ranking), '215.280.000 €');
+  assert.equal(isMyTeam(ranking, 8), true);
+  const entry = {playerMaster:{nickname:'Navarro',positionId:3,marketValue:20960000},buyoutClause:25152000};
+  assert.equal(playerName(entry), 'Navarro');
+  assert.equal(playerPosition(entry), 'MED');
+  assert.equal(playerClause(entry), '25.152.000 €');
+  assert.equal(marketPrice({salePrice:1470000}), '1.470.000 €');
 });

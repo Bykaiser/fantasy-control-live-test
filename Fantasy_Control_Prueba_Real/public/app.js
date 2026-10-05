@@ -1,4 +1,5 @@
-import {collection, profileName, leagueId, leagueName, standings, teamId, teamName, players, playerName, playerValue} from './view-model.js';
+import {collection, profileName, leagueId, leagueName, standings, teamId, teamName, teamPoints, teamValue, isMyTeam, players, playerName, playerValue, playerPosition, playerClause, marketPrice} from './view-model.js';
+import {accessTokenFromConfig} from './session-token.js';
 
 // Se mantiene solo en la memoria de esta pestaña. Nunca se persiste.
 let token = '';
@@ -28,7 +29,7 @@ function showPlayers(raw, title, target, count, message) {
   const root = el(target); clear(root);
   if (!list.length) { el(message).textContent = 'La API no entregó una lista de jugadores reconocible para esta plantilla.'; return; }
   el(message).textContent = '';
-  for (const entry of list) root.append(card(playerName(entry), [['Posición', entry.position?.name || entry.position || entry.player?.position?.name || '—'], ['Valor', playerValue(entry)]]));
+  for (const entry of list) root.append(card(playerName(entry), [['Posición', playerPosition(entry)], ['Valor', playerValue(entry)], ['Cláusula', playerClause(entry)]]));
 }
 async function loadTeam(league, team, label) {
   el('team-message').textContent = `Cargando plantilla de ${label}…`;
@@ -56,18 +57,29 @@ async function loadLeague(league) {
     el('league-message').textContent = list.length ? 'Selecciona un equipo para ver sus jugadores.' : 'La API no devolvió equipos reconocibles; revisa el contrato de respuesta.';
     for (const item of list) {
       const id = teamId(item), name = teamName(item);
-      el('standings').append(card(name, [['Puntos', item.points ?? item.totalPoints ?? item.score ?? '—'], ['Valor', playerValue(item)]], id ? {label:'Ver jugadores', action:()=>loadTeam(league, id, name)} : null));
+      el('standings').append(card(name, [['Puntos', teamPoints(item)], ['Valor', teamValue(item)]], id ? {label:'Ver jugadores', action:()=>loadTeam(league, id, name)} : null));
     }
-    const mine = list.find(item => item.isMyTeam || item.myTeam || (userId != null && String(item.owner?.id) === String(userId)));
+    const mine = list.find(item => isMyTeam(item, userId));
     if (mine && teamId(mine)) await loadTeam(league, teamId(mine), teamName(mine));
   } else el('league-message').textContent = `No se pudo cargar la clasificación: ${standingResult.reason.message}`;
   if (marketResult.status === 'fulfilled') {
     const list = collection(marketResult.value, ['market', 'players', 'offers', 'items']);
     el('market-count').textContent = `${list.length} fichas`;
     el('market-message').textContent = list.length ? '' : 'La API no devolvió fichas de mercado reconocibles.';
-    for (const item of list.slice(0,100)) el('market').append(card(playerName(item), [['Valor',playerValue(item)],['Precio',playerValue({value:item.salePrice ?? item.price ?? item.amount})]]));
+    for (const item of list.slice(0,100)) el('market').append(card(playerName(item), [['Valor',playerValue(item)],['Precio',marketPrice(item)],['Pujas',item.numberOfBids ?? '—']]));
   } else el('market-message').textContent = `Mercado no disponible: ${marketResult.reason.message}`;
 }
+el('session-file').addEventListener('change', async event => {
+  const input = event.target;
+  const file = input.files?.[0];
+  if (!file) return;
+  try {
+    if (file.size > 65536) throw new Error('El archivo de sesión es demasiado grande.');
+    el('token').value = accessTokenFromConfig(await file.text());
+    el('connect-form').requestSubmit();
+  } catch (error) { setStatus(error.message, 'error'); }
+  finally { input.value = ''; }
+});
 el('connect-form').addEventListener('submit', async event => {
   event.preventDefault(); const input = el('token'); const candidate = input.value.trim(); input.value = '';
   if (!candidate) return;
@@ -75,7 +87,7 @@ el('connect-form').addEventListener('submit', async event => {
   token = candidate; setStatus('Comprobando la sesión y buscando tus ligas…');
   try {
     const me = await read('/api/me');
-    userId = me.id ?? me.user?.id ?? null;
+    userId = me.id ?? me.userId ?? me.user?.id ?? null;
     const raw = await read('/api/leagues');
     const list = collection(raw, ['leagues', 'items']);
     if (!list.length) throw new Error('La cuenta responde, pero no se encontraron ligas con un formato conocido.');
