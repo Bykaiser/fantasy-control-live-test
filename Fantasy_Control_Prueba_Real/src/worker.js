@@ -12,6 +12,12 @@ const routes = [
   [new RegExp(`^/api/league/(${ID})/team/(${ID})$`), ([, league, team]) => `${COMPETITION}/leagues/${league}/teams/${team}`],
   [new RegExp(`^/api/league/(${ID})/market$`), ([, league]) => `${COMPETITION}/league/${league}/market`],
   [/^\/api\/week$/, () => `${COMPETITION}/week/current`],
+  [/^\/api\/players$/, () => `${COMPETITION}/players`],
+  [/^\/api\/clubs$/, () => '/v3/teams-master'],
+  [new RegExp(`^/api/team/(${ID})/money$`), ([, team]) => `${COMPETITION}/teams/${team}/money`],
+  [new RegExp(`^/api/team/(${ID})/lineup$`), ([, team]) => `${COMPETITION}/teams/${team}/lineup`],
+  [new RegExp(`^/api/league/(${ID})/player/(${ID})$`), ([, league, player]) => `${COMPETITION}/player/${player}/league/${league}`],
+  [/^\/api\/calendar\/([0-9]{1,2})$/, ([,week]) => `${COMPETITION}/calendar?weekNumber=${week}`],
 ];
 
 export function upstreamPath(pathname) {

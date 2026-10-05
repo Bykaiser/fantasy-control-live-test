@@ -1,52 +1,28 @@
 <!doctype html>
 <html lang="es">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="referrer" content="no-referrer">
-  <title>Fantasy Control · Prueba con datos reales</title>
-  <link rel="stylesheet" href="/style.css">
-  <script type="module" src="/app.js"></script>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="referrer" content="no-referrer">
+<meta name="theme-color" content="#eef5f2"><title>Fantasy Control · Mi liga</title>
+<link rel="stylesheet" href="/style.css"><script type="module" src="/app.js"></script>
 </head>
 <body>
-  <header><div class="shell top"><div><span class="mark">FC</span><strong>Fantasy Control</strong></div><span class="pill">Prueba de lectura</span></div></header>
-  <main class="shell">
-    <div class="intro"><p class="eyebrow">TU LIGA EN EL NAVEGADOR</p><h1>Entra y mira tus jugadores.</h1><p>Consulta tu liga, plantillas, mercado y cláusulas desde el navegador.</p></div>
-    <section class="card" id="connection">
-      <h2>Conectar con LaLiga Fantasy</h2>
-      <div id="connect-controls">
-      <form id="login-form">
-        <label for="email">Correo de LaLiga</label>
-        <input id="email" name="email" type="email" autocomplete="username" required>
-        <label for="password">Contraseña de LaLiga</label>
-        <input id="password" name="password" type="password" autocomplete="current-password" required>
-        <p class="hint">Tu correo y contraseña pasan por este servidor de Fantasy Control para enviarse a LaLiga por HTTPS. La aplicación no los guarda. La sesión se pierde al cerrar o recargar esta pestaña.</p>
-        <button type="submit">Entrar y ver mi liga</button>
-      </form>
-      <details><summary>Otras formas de conectar una sesión</summary>
-      <form id="connect-form">
-        <label for="session-file">Usar la sesión de tu script del móvil</label>
-        <input id="session-file" type="file" accept=".json,application/json">
-        <p class="hint">Selecciona fantasy_config.json desde tu dispositivo. Se lee aquí, sin subir el archivo; solo se utiliza su token de acceso para consultar tu liga.</p>
-        <label for="token">Token de acceso</label>
-        <div class="field"><input id="token" type="password" autocomplete="off" spellcheck="false" required placeholder="Pégalo solo en esta página"><button type="submit">Conectar y ver ligas</button></div>
-      </form>
-      </details>
-      </div>
-      <div id="connection-status" class="status" role="status">Sin conectar.</div>
-      <button id="disconnect" class="secondary" type="button" hidden>Olvidar sesión</button>
-    </section>
-    <section class="card" id="leagues" hidden>
-      <div class="heading"><div><p class="eyebrow">MI CUENTA</p><h2 id="account-name">Cuenta</h2></div><button id="reload" class="secondary" type="button">Actualizar</button></div>
-      <label for="league-select">Liga</label><select id="league-select"></select>
-      <p id="league-message" class="hint"></p>
-    </section>
-    <div id="content" hidden>
-      <section class="card"><div class="heading"><div><p class="eyebrow">MI LIGA</p><h2>Clasificación</h2></div><span id="standing-count" class="pill"></span></div><div id="standings" class="grid"></div></section>
-      <section class="card"><div class="heading"><div><p class="eyebrow">JUGADORES</p><h2 id="team-title">Plantilla</h2></div><span id="players-count" class="pill"></span></div><p id="team-message" class="hint"></p><div id="players" class="grid players"></div></section>
-      <section class="card"><div class="heading"><div><p class="eyebrow">MERCADO</p><h2>Jugadores disponibles</h2></div><span id="market-count" class="pill"></span></div><p id="market-message" class="hint"></p><div id="market" class="grid players"></div></section>
-    </div>
-    <p class="footer">Prototipo independiente, de solo lectura. La API de Fantasy no es pública y puede cambiar. No ejecuta fichajes, pagos ni cláusulas.</p>
-  </main>
-</body>
-</html>
+<header class="topbar"><a class="brand" href="/" aria-label="Fantasy Control inicio"><span class="brand-mark">FC</span><span>Fantasy <b>Control</b></span></a><span class="live-tag"><i></i> Tu liga, a tu ritmo</span><button id="account-button" class="icon-button" aria-label="Ver mi cuenta"></button></header>
+<main class="shell">
+<section id="connection" class="login-shell">
+<div class="welcome"><span class="eyebrow">TU FANTASY, CON PERSPECTIVA</span><h1>Tu liga.<br>Todo a la vista.</h1><p>Jugadores, mercado y cláusulas en un mismo lugar. Conecta tu cuenta y sigue la evolución de tu equipo.</p><div class="welcome-chips"><span>Plantillas</span><span>Mercado</span><span>Mi liga</span></div></div>
+<div class="panel login-panel"><span class="eyebrow">BIENVENIDO A FANTASY CONTROL</span><h2>Conecta tu liga</h2><p class="muted">Usa el correo y contraseña de tu cuenta de LaLiga Fantasy.</p>
+<div id="connect-controls"><form id="login-form"><label for="email">Correo de LaLiga</label><input id="email" name="email" type="email" autocomplete="username" placeholder="tu@email.com" required><label for="password">Contraseña</label><input id="password" name="password" type="password" autocomplete="current-password" placeholder="Tu contraseña de LaLiga" required><button class="primary login-submit" type="submit">Entrar y ver mi liga <span aria-hidden="true">↗</span></button><p class="privacy">Tu contraseña pasa por este servidor para enviarse a LaLiga por HTTPS. La aplicación no la guarda. La sesión se conserva solo en esta pestaña.</p></form>
+<details class="advanced"><summary>Ya tengo una sesión</summary><form id="connect-form"><label for="session-file">Archivo de sesión del script</label><input id="session-file" type="file" accept=".json,application/json"><label for="token">Token de acceso</label><input id="token" type="password" autocomplete="off" placeholder="Token de acceso temporal" required><button class="secondary" type="submit">Conectar sesión</button></form></details></div><div id="connection-status" class="status" role="status" aria-live="polite">Sin conectar.</div></div></section>
+<div id="dashboard" hidden>
+<section class="page-heading"><div><p class="eyebrow" id="page-kicker">MI CLUB</p><h1 id="page-title">Mi Equipo</h1><p class="muted" id="page-subtitle">Plantilla sincronizada con LaLiga</p></div><div class="page-actions"><select id="league-select" aria-label="Seleccionar liga"></select><button id="reload" class="secondary"></button></div></section>
+<div id="global-message" class="status" role="status" hidden></div>
+<section id="view-team" class="view"><div id="team-summary"></div><div class="team-layout"><section class="panel chart-panel"><div class="panel-heading"><div><h2>Evolución del club</h2><p class="muted">Plantilla + saldo, día a día</p></div><span class="tag">Historial local</span></div><div id="club-chart"></div></section><div class="metric-grid" id="team-metrics"></div></div><div class="sync-note" id="team-note"></div><div class="section-heading"><div><span class="eyebrow">LOS PROTAGONISTAS</span><h2>Tu plantilla</h2></div><span class="tag" id="squad-count"></span></div><div class="controls"><div class="pills" id="team-mode"><button data-mode="club" class="active">Club</button><button data-mode="lineup">Alineación</button></div><select id="team-sort" aria-label="Ordenar plantilla"><option value="value">Valor ↓</option><option value="points">Puntos ↓</option><option value="average">Media ↓</option><option value="change">Cambio de ayer ↓</option><option value="name">Nombre A–Z</option></select></div><div id="squad-list" class="player-grid"></div></section>
+<section id="view-market" class="view" hidden><div class="controls"><div id="market-mode" class="pills"><button data-mode="market" class="active">Mercado</button><button data-mode="clauses">Cláusulas</button><button data-mode="favourites">Favoritos</button></div><select id="market-sort" aria-label="Ordenar mercado"><option value="value">Valor ↓</option><option value="price">Precio ↓</option><option value="clause">Cláusula ↑</option><option value="points">Puntos ↓</option><option value="change">Cambio de ayer ↓</option><option value="name">Nombre A–Z</option></select></div><div class="pills position-filter" id="market-position"></div><div class="pills" id="clause-filter" hidden><button data-hours="all" class="active">Todas</button><button data-hours="0">Abiertas</button><button data-hours="24">En 24 h</button><button data-hours="48">En 48 h</button><button data-hours="168">En 7 días</button></div><p class="muted" id="market-info" role="status"></p><div id="market-list" class="player-grid"></div></section>
+<section id="view-league" class="view" hidden><div class="account-cards"><div class="panel connected-card"><div><span class="eyebrow">TU CUENTA</span><h2 id="account-name"></h2><p class="muted">Sesión activa en esta pestaña</p></div><button id="disconnect" class="secondary">Desconectar</button></div><div class="panel" id="league-summary"></div></div><div class="panel ranking-panel"><div class="panel-heading"><h2>Clasificación de la liga</h2><span class="tag" id="standing-count"></span></div><div class="table-wrap"><table><thead><tr><th>#</th><th>Mánager</th><th>Puntos</th><th>Valor</th><th><span class="sr-only">Plantilla</span></th></tr></thead><tbody id="standings"></tbody></table></div></div></section>
+<section id="view-search" class="view" hidden><div class="search-box"><span id="search-icon"></span><input type="search" id="player-search" placeholder="Jugador o equipo" aria-label="Buscar jugador o equipo"></div><div class="controls"><div class="pills position-filter" id="search-position"></div><button id="load-owners" class="secondary">Consultar propietarios</button></div><p class="muted" id="search-info" role="status"></p><div id="search-list" class="player-grid"></div><button id="show-more" class="secondary" hidden>Ver más jugadores</button></section>
+<p class="footer">Fantasy Control · Datos de tu sesión de LaLiga. El historial y los favoritos se guardan en este navegador; la contraseña y la sesión no.</p>
+</div>
+</main>
+<nav id="bottom-nav" class="bottom-nav" aria-label="Secciones" hidden><button data-view="team" class="active"></button><button data-view="market"></button><button data-view="league"></button><button data-view="search"></button></nav>
+<dialog id="player-dialog"><div class="dialog-bar"><button id="close-dialog" class="icon-button" aria-label="Cerrar ficha">✕</button><span>Detalle del jugador</span></div><div id="player-detail"></div></dialog>
+</body></html>
