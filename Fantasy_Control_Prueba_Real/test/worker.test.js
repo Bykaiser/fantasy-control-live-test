@@ -6,6 +6,48 @@ import { collection, standings, teamId, teamName, teamPoints, teamValue, isMyTea
 
 const base = 'https://fantasy-control-live-test.example.workers.dev';
 const token = 'Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0In0.signature-value';
+const loginRequest = (body, origin=base) => new Request(`${base}/api/login`, {
+  method:'POST',headers:{Origin:origin,'Content-Type':'application/json'},body:JSON.stringify(body),
+});
+test('email login matches the phone script and returns only the access token', async () => {
+  const original=globalThis.fetch;
+  try {
+    globalThis.fetch=async (url,opts) => {
+      assert.equal(String(url),'https://login.laliga.es/laligadspprob2c.onmicrosoft.com/oauth2/v2.0/token?p=B2C_1A_ResourceOwnerv2');
+      assert.equal(opts.method,'POST');
+      assert.equal(opts.body.get('grant_type'),'password');
+      assert.equal(opts.body.get('username'),'example@example.com');
+      assert.equal(opts.body.get('password'),'test-password');
+      assert.equal(opts.body.get('redirect_uri'),'authredirect://com.lfp.laligafantasy');
+      return Response.json({access_token:token.slice(7),refresh_token:'must-not-return',id_token:'must-not-return'});
+    };
+    const response=await worker.fetch(loginRequest({email:'example@example.com',password:'test-password'}),{});
+    assert.equal(response.status,200);
+    assert.deepEqual(await response.json(),{access_token:token.slice(7)});
+    assert.equal(response.headers.get('Cache-Control'),'no-store');
+  } finally {globalThis.fetch=original;}
+});
+test('login blocks foreign origins and invalid credentials before contacting LaLiga', async () => {
+  const original=globalThis.fetch;
+  globalThis.fetch=()=>{throw new Error('Should not reach upstream');};
+  try {
+    assert.equal((await worker.fetch(loginRequest({email:'a@b.com',password:'x'},'https://elsewhere.example'),{})).status,403);
+    assert.equal((await worker.fetch(loginRequest({email:'a@b.com',password:''}),{})).status,400);
+    assert.equal((await worker.fetch(new Request(`${base}/api/login`,{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'}),{})).status,403);
+  } finally {globalThis.fetch=original;}
+});
+test('login errors never echo upstream account details or passwords', async () => {
+  const original=globalThis.fetch;
+  try {
+    globalThis.fetch=async()=>Response.json({error_description:'AADB2C90034: example@example.com test-password'}, {status:400});
+    const response=await worker.fetch(loginRequest({email:'example@example.com',password:'test-password'}),{});
+    assert.equal(response.status,401);
+    const body=await response.text();
+    assert.ok(body.includes('AADB2C90034'));
+    assert.ok(!body.includes('example@example.com'));
+    assert.ok(!body.includes('test-password'));
+  } finally {globalThis.fetch=original;}
+});
 test('session import extracts only the access token and rejects refresh-only files', () => {
   assert.equal(accessTokenFromConfig(JSON.stringify({access_token:token.slice(7),refresh_token:'unused'})), token.slice(7));
   assert.throws(() => accessTokenFromConfig('{"refresh_token":"unused"}'));

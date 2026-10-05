@@ -84,6 +84,10 @@ el('connect-form').addEventListener('submit', async event => {
   event.preventDefault(); const input = el('token'); const candidate = input.value.trim(); input.value = '';
   if (!candidate) return;
   const button = event.submitter; if (button) button.disabled = true;
+  try { await connect(candidate); }
+  finally { if (button) button.disabled = false; }
+});
+async function connect(candidate) {
   token = candidate; setStatus('Comprobando la sesión y buscando tus ligas…');
   try {
     const me = await read('/api/me');
@@ -99,12 +103,27 @@ el('connect-form').addEventListener('submit', async event => {
     }
     if (!select.options.length) throw new Error('La cuenta no devolvió identificadores de liga reconocibles.');
     setStatus(`Conexión válida. ${select.options.length} liga(s) encontradas.`, 'good');
-    el('connection').querySelector('form').hidden = true;
+    el('connect-controls').hidden = true;
     el('disconnect').hidden = false; el('leagues').hidden = false;
     await loadLeague(select.value);
+  } catch (error) { token = ''; setStatus(error.message, 'error'); }
+}
+el('login-form').addEventListener('submit', async event => {
+  event.preventDefault();
+  const button = event.submitter;
+  if (button) button.disabled = true;
+  const email = el('email').value.trim();
+  const password = el('password').value;
+  el('password').value = '';
+  setStatus('Iniciando sesión en LaLiga…');
+  try {
+    const response = await fetch('/api/login', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password}),cache:'no-store'});
+    const data = await response.json();
+    if (!response.ok) throw new Error(`${data.error || 'No se pudo iniciar sesión.'}${data.code ? ` (${data.code})` : ''}`);
+    await connect(data.access_token);
   } catch (error) { token = ''; setStatus(error.message, 'error'); }
   finally { if (button) button.disabled = false; }
 });
 el('league-select').addEventListener('change', event => loadLeague(event.target.value));
 el('reload').addEventListener('click', () => loadLeague(el('league-select').value));
-el('disconnect').addEventListener('click', () => { token = ''; activeLeague = null; userId = null; el('connect-form').hidden = false; el('disconnect').hidden = true; el('leagues').hidden = true; el('content').hidden = true; clear(el('standings')); clear(el('players')); clear(el('market')); setStatus('Sesión olvidada.'); });
+el('disconnect').addEventListener('click', () => { token = ''; activeLeague = null; userId = null; el('connect-controls').hidden = false; el('password').value = ''; el('disconnect').hidden = true; el('leagues').hidden = true; el('content').hidden = true; clear(el('standings')); clear(el('players')); clear(el('market')); setStatus('Sesión olvidada.'); });

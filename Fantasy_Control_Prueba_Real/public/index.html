@@ -11,10 +11,19 @@
 <body>
   <header><div class="shell top"><div><span class="mark">FC</span><strong>Fantasy Control</strong></div><span class="pill">Prueba de lectura</span></div></header>
   <main class="shell">
-    <div class="intro"><p class="eyebrow">TU LIGA EN EL NAVEGADOR</p><h1>Conecta una sesión y mira tus jugadores.</h1><p>Esta prueba consulta LaLiga Fantasy en tiempo real. El token vive únicamente en esta pestaña y desaparece al recargarla o cerrarla.</p></div>
+    <div class="intro"><p class="eyebrow">TU LIGA EN EL NAVEGADOR</p><h1>Entra y mira tus jugadores.</h1><p>Consulta tu liga, plantillas, mercado y cláusulas desde el navegador.</p></div>
     <section class="card" id="connection">
-      <h2>Conexión de prueba</h2>
-      <p>Introduce aquí un <strong>token de acceso</strong> de una sesión propia de LaLiga Fantasy. No introduzcas contraseñas ni un token de renovación. No lo envíes por chat ni lo subas a GitHub.</p>
+      <h2>Conectar con LaLiga Fantasy</h2>
+      <div id="connect-controls">
+      <form id="login-form">
+        <label for="email">Correo de LaLiga</label>
+        <input id="email" name="email" type="email" autocomplete="username" required>
+        <label for="password">Contraseña de LaLiga</label>
+        <input id="password" name="password" type="password" autocomplete="current-password" required>
+        <p class="hint">Tu correo y contraseña pasan por este servidor de Fantasy Control para enviarse a LaLiga por HTTPS. La aplicación no los guarda. La sesión se pierde al cerrar o recargar esta pestaña.</p>
+        <button type="submit">Entrar y ver mi liga</button>
+      </form>
+      <details><summary>Otras formas de conectar una sesión</summary>
       <form id="connect-form">
         <label for="session-file">Usar la sesión de tu script del móvil</label>
         <input id="session-file" type="file" accept=".json,application/json">
@@ -22,6 +31,8 @@
         <label for="token">Token de acceso</label>
         <div class="field"><input id="token" type="password" autocomplete="off" spellcheck="false" required placeholder="Pégalo solo en esta página"><button type="submit">Conectar y ver ligas</button></div>
       </form>
+      </details>
+      </div>
       <div id="connection-status" class="status" role="status">Sin conectar.</div>
       <button id="disconnect" class="secondary" type="button" hidden>Olvidar sesión</button>
     </section>
