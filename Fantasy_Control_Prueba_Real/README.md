@@ -26,13 +26,13 @@ Las rutas de Fantasy son exclusivamente de consulta y de la competición 1. No s
 
 ## Interfaz e historial
 
-- Mi Equipo: valor de plantilla, saldo disponible, valor del club, alineación y ordenación de jugadores.
-- Mercado: precios, pujas, filtros de posición, cláusulas y favoritos. Las cláusulas consultan las plantillas de la liga con concurrencia limitada.
+- Mi Equipo: valor de plantilla, saldo disponible, valor del club, alineación visual en el campo y ordenación por valor, puntos y cambios observados.
+- Mercado: precios, pujas, tipo de venta, vendedor, vencimiento, filtros de posición, Scope (ventas por debajo del valor), cláusulas, ordenación y favoritos. Las cláusulas consultan las plantillas de la liga con concurrencia limitada.
 - Mi Liga: clasificación y acceso a cada plantilla.
-- Buscar: catálogo de jugadores y consulta de propietarios.
-- Ficha: valor, puntos, media, cláusula, historial y próximos rivales cuando la API los entrega.
+- Buscar: catálogo de jugadores y consulta de propietarios; se marca Libre solo al consultar todas las plantillas sin errores.
+- Ficha: valor, puntos, media, cláusula, perfil Fantasy cuando la API entrega esos campos, historial y próximos rivales.
 
-El navegador guarda una observación por día (máximo 120) y favoritos, separados por cuenta y liga. No guarda contraseñas ni tokens. Las variaciones requieren una observación de la fecha correspondiente; el histórico anterior a la primera consulta no se reconstruye. Las proyecciones lineales experimentales necesitan al menos siete observaciones en siete días y no incluyen lesiones, titularidad ni rivales. No se inventan porcentajes de titularidad o confianza.
+El navegador guarda una observación por día (máximo 120) y favoritos, separados por cuenta y liga. No guarda contraseñas ni tokens. Las variaciones requieren una observación de la fecha correspondiente; el histórico anterior a la primera consulta no se reconstruye. Las proyecciones lineales experimentales necesitan al menos siete observaciones en siete días y no incluyen lesiones, titularidad ni rivales. No se inventan porcentajes de titularidad o confianza; la vista Perfil Fantasy aparece solo si la API entrega esos campos.
 
 ## Verificación
 

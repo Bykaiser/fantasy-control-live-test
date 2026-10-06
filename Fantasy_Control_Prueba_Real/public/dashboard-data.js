@@ -17,7 +17,12 @@ export function normalizePlayer(row, clubs=new Map(), owner=null) {
   return {id:pid==null?'':String(pid),name:playerName(row),pos:playerPosition(row),club:club.name||club.shortName||'',clubId:String(club.id??pm.teamId??''),badge:safeImage(club.badgeColor),image:image(pm),
     value:numeric(pm.marketValue??row?.marketValue),points:numeric(pm.points),average:numeric(pm.averagePoints),status:typeof pm.playerStatus==='string'?pm.playerStatus:null,
     price:numeric(row?.salePrice??row?.price),bids:numeric(row?.numberOfBids),clause:numeric(row?.buyoutClause??row?.clause),lock:row?.buyoutClauseLockedEndTime??row?.clauseLockUntil,
-    owner,raw:row};
+    seller:row?.sellerTeam?.manager?.managerName||null,
+    saleType:row?.discr==='marketPlayerLeague'?'Mercado':row?.discr?'Venta':null,
+    expires:row?.expirationDate||null,
+    startingChance:numeric(pm.probability??row?.probability),
+    projectedPoints:numeric(pm.pointsIfStarter??row?.pointsIfStarter),
+    rating:numeric(pm.rating??row?.rating),owner,raw:row};
 }
 export function clauseState(player, now=Date.now()) {
   if(player.clause==null)return {known:false,open:false,hours:Infinity,label:'Sin datos'};
@@ -58,7 +63,17 @@ export function priceHistory(raw) {
 export function sortPlayers(list,key,history) {
   return [...list].sort((a,b)=>{
     if(key==='name')return a.name.localeCompare(b.name,'es');
-    const va=key==='change'?delta(history,a.value,1,a.id):a[key],vb=key==='change'?delta(history,b.value,1,b.id):b[key];
+    const sortValue=p=>{
+      if(key==='change')return delta(history,p.value,1,p.id);
+      if(key==='change7')return delta(history,p.value,7,p.id);
+      if(key==='changeAll'){
+        const first=history.find(row=>numeric(row.players?.[p.id])!=null);
+        return first&&numeric(p.value)!=null&&first.date!==history.at(-1)?.date?p.value-numeric(first.players[p.id]):null;
+      }
+      if(key==='opportunity')return p.price!=null&&p.value!=null?p.value-p.price:null;
+      return p[key];
+    };
+    const va=sortValue(a),vb=sortValue(b);
     if(va==null)return vb==null?0:1;if(vb==null)return -1;
     return key==='clause'?va-vb:vb-va;
   });

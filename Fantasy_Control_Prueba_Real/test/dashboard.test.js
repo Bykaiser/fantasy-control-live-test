@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {normalizePlayer,clauseState,saveSnapshot,delta,projection,safeImage} from '../public/dashboard-data.js';
+import {normalizePlayer,clauseState,saveSnapshot,delta,projection,safeImage,sortPlayers} from '../public/dashboard-data.js';
 import {upstreamPath} from '../src/worker.js';
 test('normalizes nested players, clubs, real clauses and absent values',()=>{
  const p=normalizePlayer({playerMaster:{id:8,nickname:'Jugador',positionId:4,marketValue:1200000,points:0,teamId:2,images:{transparent:{'256x256':'https://example.com/player.png'}}},buyoutClause:2000000},new Map([['2',{id:2,name:'Club'}]]));
@@ -22,4 +22,16 @@ test('daily history replaces same-day observations and requires exact dates for 
 test('calendar routing retains the jornada query and new routes are precise',()=>{
  assert.equal(upstreamPath('/api/calendar/8'),'/v1/competition/1/calendar?weekNumber=8');
  assert.equal(upstreamPath('/api/players'),'/v1/competition/1/players');assert.equal(upstreamPath('/api/team/5/money'),'/v1/competition/1/teams/5/money');assert.equal(upstreamPath('/api/players/delete'),null);
+});
+test('market sale details and player profile use supplied values only',()=>{
+ const p=normalizePlayer({discr:'marketPlayerLeague',salePrice:5000000,numberOfBids:0,expirationDate:'2026-10-07T12:00:00Z',sellerTeam:{manager:{managerName:'Ana'}},playerMaster:{id:20,nickname:'Luz',positionId:3,marketValue:7000000,probability:70,pointsIfStarter:6,rating:7.2}});
+ assert.equal(p.saleType,'Mercado');assert.equal(p.seller,'Ana');assert.equal(p.bids,0);assert.equal(p.startingChance,70);assert.equal(p.projectedPoints,6);assert.equal(p.rating,7.2);
+ const missing=normalizePlayer({playerMaster:{id:21,nickname:'Raúl',marketValue:5000000}});
+ assert.equal(missing.startingChance,null);assert.equal(missing.expires,null);
+});
+test('market opportunity and observed seven-day gain sort actual prices',()=>{
+ const list=[{id:'1',name:'A',value:100,price:90},{id:'2',name:'B',value:100,price:40},{id:'3',name:'C',value:100,price:null}];
+ assert.deepEqual(sortPlayers(list,'opportunity',[]).map(x=>x.id),['2','1','3']);
+ const history=[{date:'2026-09-29',players:{1:80,2:90,3:90}}];
+ assert.deepEqual(sortPlayers(list,'change7',history).map(x=>x.id),['1','2','3']);
 });
